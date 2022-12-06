@@ -7,6 +7,10 @@
 #define COLUMN 11
 #define SPLIT_STRING "交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注\r\n"
 #define SPLIT_LINE "\n"
+#define NONE "\e[0m"
+#define RED "\e[1;31m"
+#define YELLOW "\e[1;33m"
+#define CYAN "\e[1;36m"
 
 typedef enum
 {
@@ -103,9 +107,26 @@ double getMoney(char *source)
     return moneyVal;
 }
 
+void printNext()
+{
+    printf(CYAN);
+    printSplitLine('#', 30);
+    printf("输入交易单号或者商户单号查询具体交易信息（Ctrl+C退出）\n");
+    printSplitLine('#', 30);
+    printf(NONE);
+};
+
 int main(int argc, char **argv)
 {
     char *filename = argv[1];
+    if(filename == NULL)
+    {
+        printf("请输入文件名：\n");
+        filename = (char *)malloc(100);
+        scanf("%s", filename);
+        getchar();
+        getchar();
+    }
     printSplitLine('-', 50);
     printf("Reading file \"%s\"\n", filename);
     FILE *fp = fopen(filename, "rb");
@@ -369,21 +390,21 @@ int main(int argc, char **argv)
     //     printf("\n####");
     // }
     printSplitLine('-', 50);
-    printSplitLine('#', 30);
-    printf("输入交易单号或者商户单号查询具体交易信息（Ctrl+C退出）\n");
-    printSplitLine('#', 30);
 
+    printNext();
     char inputNum[100];
     char *inputNumPtr;
     while (fgets(inputNum, 100, stdin) != NULL)
     {
         inputNumPtr = split(inputNum, '\n')[0];
+        int flag = 0;
         for (int i = 1; i < file_line; i++)
         {
             char *orderNum = split(buffer[i][order], '\t')[0];
             char *merchantNum = split(buffer[i][merchant], '\t')[0];
             if (strcmp(inputNumPtr, orderNum) == 0 || strcmp(inputNumPtr, merchantNum) == 0)
             {
+                printf(YELLOW);
                 printf("交易单号: %s\n", orderNum);
                 printf("商户单号: %s\n", merchantNum);
                 printf("交易时间: %s\n", buffer[i][time]);
@@ -391,13 +412,18 @@ int main(int argc, char **argv)
                 printf("交易类型: %s\n", buffer[i][income]);
                 printf("交易状态: %s\n", buffer[i][status]);
                 printf("交易备注: %s\n", buffer[i][remark]);
+                printf(NONE);
+                flag = 1;
                 break;
             }
         }
-        printSplitLine('#', 30);
-        printf("输入交易单号或者商户单号查询具体交易信息（Ctrl+C退出）\n");
-        printSplitLine('#', 30);
-        printf("\n");
+        if (flag == 0)
+        {
+            printf(RED);
+            printf("\n未找到该交易单号或者商户单号，请重新输入\n\n");
+            printf(NONE);
+        }
+        printNext();
     }
     printSplitLine('-', 50);
 
