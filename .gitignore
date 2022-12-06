@@ -42,6 +42,7 @@
 *.idb
 *.pdb
 c-exam
+index
 
 # Kernel Module Compile Results
 *.mod*
